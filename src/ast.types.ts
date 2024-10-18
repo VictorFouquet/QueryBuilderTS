@@ -10,7 +10,8 @@ import {
 
 export type ValueNode<Leaf, Entity> = {
     op: InferOperator<Leaf, Entity> | InferCollectionOperator<Leaf, Entity>,
-    value: InferValueType<Leaf, Entity> | InferCollectionValueType<Leaf, Entity>
+    value: InferValueType<Leaf, Entity, InferOperator<Leaf, Entity>> | 
+           InferCollectionValueType<Leaf, Entity, InferCollectionOperator<Leaf, Entity>>
 }
 
 export type FieldNode<Leaf extends Leaves<Entity>, Entity> = {

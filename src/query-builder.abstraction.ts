@@ -12,10 +12,14 @@ import {
 export abstract class Query<Entity> {
     whereClause: WhereNode<Entity> = { where: {} };
 
-    where<Leaf extends Leaves<Entity>> (
-        leaf:  Leaf,
-        op:    InferOperator<Leaf, Entity>,
-        value: InferValueType<Leaf, Entity>
+    where<
+        Key extends Leaves<Entity>,
+        Operator extends InferOperator<Key, Entity>,
+        Value extends InferValueType<Key, Entity, Operator>
+    > (
+        leaf:  Key,
+        op:    Operator,
+        value: Value
     ): this {
         (this.whereClause.where as any)[leaf] = {
             op,
@@ -25,33 +29,25 @@ export abstract class Query<Entity> {
         return this
     }
 
-    whereCollection<Leaf extends CollectionLeaves<Entity>> (
+    whereCollection<
+        Key extends CollectionLeaves<Entity>,
+        Operator extends InferCollectionOperator<Key, Entity>,
+        Value extends InferCollectionValueType<Key, Entity, Operator>
+    > (
         action: AggregateOperators,
-        leaf:   Leaf,
-        op:     InferCollectionOperator<Leaf, Entity>,
-        value:  InferCollectionValueType<Leaf, Entity>,
+        leaf:   Key,
+        op:     Operator,
+        value:  Value,
     ): this {
-        const fieldNode = this.buildFieldNode(leaf, op, value);
-
         if (!this.whereClause.where[action]) {
             (this.whereClause.where as any)[action] = {};
         }
 
-        (this.whereClause.where as any)[action][leaf] = fieldNode[leaf];
+        (this.whereClause.where as any)[action][leaf] = {
+            op,
+            value
+        };
 
-        return this
-    }
-
-    private buildFieldNode<Leaf extends Leaves<Entity> | CollectionLeaves<Entity>>(
-        leaf:   Leaf,
-        op:     InferOperator<Leaf, Entity>  | InferCollectionOperator<Leaf, Entity>,
-        value:  InferValueType<Leaf, Entity> | InferCollectionValueType<Leaf, Entity>,
-    ): FieldNode<Leaf, Entity> {
-        return {
-            [leaf]: {
-                op,
-                value
-            }
-        } as FieldNode<Leaf, Entity>;;
+        return this;
     }
 }
