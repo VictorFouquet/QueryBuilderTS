@@ -112,7 +112,7 @@ test('Query should support filtering on boolean values with different boolean op
     .toStrictEqual({ where: { closed: { op: 'not', value: true } }});
 })
 
-test('Query should allow selection based on single root property', () => {
+test('Query should support filtering on single root property', () => {
     interface Todo {
         id: number,
         title: string,
@@ -131,7 +131,7 @@ test('Query should allow selection based on single root property', () => {
     })
 })
 
-test('Query should allow selection based on combined root properties', () => {
+test('Query should support filtering on combined root properties', () => {
     interface Todo {
         id: number,
         title: string,
@@ -160,7 +160,7 @@ test('Query should allow selection based on combined root properties', () => {
     })
 })
 
-test('Query should allow selection based on nested object properties', () => {
+test('Query should support filtering on nested object properties', () => {
     interface Category {
         id: number;
         name: string;
@@ -189,7 +189,7 @@ test('Query should allow selection based on nested object properties', () => {
     })
 })
 
-test('Query should allow selection based on combined root and nested object properties', () => {
+test('Query should support filtering on combined root and nested object properties', () => {
     interface Category {
         id: number;
         name: string;
@@ -224,7 +224,7 @@ test('Query should allow selection based on combined root and nested object prop
     })
 })
 
-test('Query should allow selection based on array properties aggregates', () => {
+test('Query should support filtering on array properties aggregates', () => {
     interface User {
         id: number;
         todos: Todo[]
@@ -264,7 +264,7 @@ test('Query should allow selection based on array properties aggregates', () => 
     });
 })
 
-test('Query should allow selection based on combined leaves inside array properties aggregates', () => {
+test('Query should support filtering on combined leaves inside array properties aggregates', () => {
     interface User {
         id: number;
         todos: Todo[];
@@ -304,7 +304,7 @@ test('Query should allow selection based on combined leaves inside array propert
     });
 })
 
-test('Query should allow selection based on combined root and array properties aggregates', () => {
+test('Query should support filtering on combined root and array properties aggregates', () => {
     interface User {
         id: number;
         todos: Todo[]
@@ -342,7 +342,7 @@ test('Query should allow selection based on combined root and array properties a
     });
 })
 
-test('Query should allow selection based on circular dependency', () => {
+test('Query should support filtering on circular dependency', () => {
     interface User {
         id: number;
         todos: Todo[]
@@ -369,7 +369,7 @@ test('Query should allow selection based on circular dependency', () => {
     });
 })
 
-test('Query should override leaf selection if yet defined with same operator', () => {
+test('Query should support filtering overide of yet defined leaf with same operator', () => {
     interface User {
         id: number;
     }
@@ -389,7 +389,7 @@ test('Query should override leaf selection if yet defined with same operator', (
     });
 })
 
-test('Query should override leaf selection if yet defined with different operator', () => {
+test('Query should support filtering overide of yet defined leaf with different operators', () => {
     interface User {
         id: number;
     }
@@ -409,7 +409,7 @@ test('Query should override leaf selection if yet defined with different operato
     });
 })
 
-test('Query should override leaf selection in same aggregate operation if yet defined with same operator', () => {
+test('Query should support filtering overide of yet defined leaf in same aggregate operation with same operator', () => {
     interface User {
         id: number;
         todos: Todo[];
@@ -435,7 +435,7 @@ test('Query should override leaf selection in same aggregate operation if yet de
     });
 })
 
-test('Query should override leaf selection in same aggregate operation if yet defined with different operator', () => {
+test('Query should support filtering overide of yet defined leaf in same aggregate operation with different operators', () => {
     interface User {
         id: number;
         todos: Todo[];
@@ -461,7 +461,7 @@ test('Query should override leaf selection in same aggregate operation if yet de
     });
 })
 
-test('Query should override leaf selection if yet defined in a different aggregate operation with same operator', () => {
+test('Query should support filtering overide of yet defined leaf in different aggregate operations with same operator', () => {
     interface User {
         id: number;
         todos: Todo[];
@@ -487,7 +487,7 @@ test('Query should override leaf selection if yet defined in a different aggrega
     });
 })
 
-test('Query should override leaf selection if yet defined in a different aggregate operation with different operator', () => {
+test('Query should support filtering overide of yet defined leaf in different aggregate operations with different operators', () => {
     interface User {
         id: number;
         todos: Todo[];
@@ -513,7 +513,7 @@ test('Query should override leaf selection if yet defined in a different aggrega
     });
 })
 
-test('Query generated whereClause should be traversable', () => {
+test('Query should support traversal of its generated whereClause AST', () => {
     interface User {
         id: number;
         name: string;
