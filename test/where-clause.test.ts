@@ -264,6 +264,46 @@ test('Query should allow selection based on array properties aggregates', () => 
     });
 })
 
+test('Query should allow selection based on combined leaves inside array properties aggregates', () => {
+    interface User {
+        id: number;
+        todos: Todo[];
+        cars: Car[];
+    }
+    interface Todo {
+        id: number;
+        title: string;
+    }
+    interface Car {
+        id: number;
+    }
+
+    class UserQuery extends Query<User, PrimitiveLeaves<User>,CollectionLeaves<User>> {};
+    let q = new UserQuery()
+        .whereCollection("all", "todos.id", "gt_lt", [0, 10])
+        .whereCollection("all", "todos.title", "contains", "work")
+        .whereCollection("all", "cars.id", "gt_lt", [0, 10])
+
+    expect(q.whereClause).toStrictEqual({
+        where: {
+            all: {
+                "todos.id": {
+                    op: "gt_lt",
+                    value: [0, 10]
+                },
+                "todos.title": {
+                    op: "contains",
+                    value: "work"
+                },
+                "cars.id": {
+                    op: "gt_lt",
+                    value: [0, 10]
+                }
+            }
+        }
+    });
+})
+
 test('Query should allow selection based on combined root and array properties aggregates', () => {
     interface User {
         id: number;
