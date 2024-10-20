@@ -107,11 +107,12 @@ The `key` argument is one of the `Entity` leaves, either nested or not, but it s
 
 The `operator` argument is the comparison criteria.
 
-There is three types of operators :
+There is five types of operators :
 
 - `Numerical` being `'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte'` and can be applied to `number` and `Date` values
 - `NumericalRangeOperators` being `'gt_lt' | 'gt_lte' | 'gte_lt' | 'gte_lte'` and can be applied to `number` and `Date` values
 - `LitteralOperators` being `'eq' | 'neq' | 'contains' | 'startswith' | 'endswith'` and can be applied to `string` values
+- `LitteralLikeOperators` being `like` and can be applied to `string` values
 - `BooleanOperators` being `is | not` and can be applied to `boolean` values
 
 The `value` is simply the value associated to the given `key` that will be used to perform the comparison.
@@ -131,10 +132,15 @@ userQuery.where('id', 'eq', 1);
 // { "where": { "name": { "op": "contains", "value": "John" } } }
 userQuery.where('name', 'contains', 'John');
 
-// Get users whose house has been built after 01-01-2000
+// Get users whose name starts with John and ends with Doe
+// Formatted result:
+// { "where": { "name": { "op": "like", "value": "John%Doe" } } }
+userQuery.where('name', 'like', 'John%Doe');
+
+// Get users whose house has been built after 01-01-2000 and before 01-01-2020
 // Formatted result:
 // { "where": { "house.construction": { "op": "gt", "value": "2000-01-01" } } }
-userQuery.where('house.construction', 'gt', new Date('2000-01-01'));
+userQuery.where('house.construction', 'gt_lt', new Date('2000-01-01'), new Date('2020-01-01'));
 
 // Get users whose name starts with John and ends with Doe
 // Formatted result:
@@ -166,27 +172,31 @@ userQuery.where("house.size", "contains", 5);
 // This won't compile because even if `house.size` and `gt_lte` are compatible,
 // a simple `number` can't be used to perform an in range comparison.
 userQuery.where("house.size", "gt_lte", 5);
+
+// This won't compile because even if `name` and `like` are compatible,
+// the provided string doesn't match a `LikeValue` argument.
+userQuery.where("name", "like", "John") 
 ```
 
 **Note that redefining a leaf will overide its value whatever the operator**
 
-Indeed, client are not allowed to do for instance:
+Examples:
 
 ```typescript
+// House size greater than 5 is overidden by the second call
 userQuery.where("house.size", "gt", 5).where("house.size", "lt", [10]);
 
-userQuery.where("name", "startswith", "John").where("name", "endswith", "Doe");
+// Use range operator instead to get users whose house is greater than 5 and lower than 10
+userQuery.where("house.size", "gt_lt", [5, 10]);
 ```
-
-And should instead do:
 
 ```typescript
-userQuery.where("house.size", "gt_lt", [5, 10]);
+// User name starts with John is overidden by the second call
+userQuery.where("name", "startswith", "John").where("name", "endswith", "Doe");
 
+// Use like operator instead to get users whose name starts with John and ends with Doe
 userQuery.where("name", "like", "John%Doe");
 ```
-
-**When using the like operator, make sure to provide a string containing at least one "%" or "_", else a compilation error will arise**
 
 ### WhereCollection
 
