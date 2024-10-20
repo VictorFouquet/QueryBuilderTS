@@ -54,9 +54,9 @@ Currently in the code base, primitives are set to be `string | number | Date | b
 
 This type will extract all the primitive leaves recursively, meaning that from the ``Entity`` example, it will also get the nested ``House`` leaves.
 
-The nested leaves will be prepended with their associated key in the parent object, dot separated.
+The nested leaves will be appended to their the parent's path, dot separated.
 
-The result would be the following string union : `'id' | 'name' | house.id | house.size | house.construction`
+The result of `PrimitiveLeaves<User>` would be the following string union : `'id' | 'name' | house.id | house.size | house.construction`
 
 Note that in the recursion process, the exploration stops when a yet visited type is encountered, thus we can't find `house.owner.[...]` as `User` has been visited as root entity.
 
@@ -68,13 +68,13 @@ If we take the example of a `CarQuery`, we won't find leaves looking like `owner
 
 The main difference is that ``CollectionLeaves`` have an array in the path that lead to them.
 
-From the ``Entity`` example, the generated string union would be:
+From the ``Entity`` example, the result of `CollectionLeaves<User>` would be the following union:
 
 `cars.id | cars.model | cars.mileage`
 
-As we have seen in the ``PrimitiveLeaves`` example, we can't reach back `User` in a `UserQuery` through a leaf that would look like `cars.owner.[...]`.
+As we have seen in the ``PrimitiveLeaves`` example, we can't get back to user through a leaf that would look like `cars.owner.[...]`.
 
-Similarly for a `CarQuery`, we won't find leaves looking like `owner.cars.[...]` but we will find leaves like `owner.house.size`
+Similarly for a `CarQuery`, we won't find leaves looking like `owner.cars.[...]` but we still can find leaves like `owner.house.size`
 
 #### Creating the query class
 
