@@ -15,6 +15,12 @@ export type AggregateNode<Entity, Leaf extends string> = {
     };
 }
 
+export type OrNode<Entity, L extends string, CL extends string> = {
+    OR: [WhereNode<Entity, L, CL>, WhereNode<Entity, L, CL>];
+}
+
 export type WhereNode<Entity, L extends string, CL extends string> = {
-    where: PrimitiveNode<Entity, L> & AggregateNode<Entity, CL>;
+    where: PrimitiveNode<Entity, L> 
+        & AggregateNode<Entity, CL>
+        & Partial<OrNode<Entity, L, CL>>;
 };

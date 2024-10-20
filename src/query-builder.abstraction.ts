@@ -67,4 +67,22 @@ export abstract class Query<Entity, Leaves extends string, ArrayLeaves extends s
 
         return this;
     }
+
+    orWhere(query: Query<Entity, Leaves, ArrayLeaves>): this {
+        this.whereClause.where = {
+            ...this.whereClause.where,
+            OR: [
+                { where: {...this.whereClause.where } }, // Keep the existing whereClause
+                query.whereClause // Add the new whereClause from the other query
+            ]
+        };
+
+        for (let key of Object.keys(this.whereClause.where)) {
+            if (key === "OR")
+                continue;
+            delete (this.whereClause.where as any)[key];
+        }
+
+        return this;
+    }
 }
