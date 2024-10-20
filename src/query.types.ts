@@ -35,7 +35,7 @@ type ArrayLeafKeys<T, MatchType, Prefix extends string = '', HasArray extends bo
 
 
 
-  
+export const AGGREGATE_OPS          = ['some', 'all', 'none'];
 export type AggregateOperators      = 'some' | 'all' | 'none';
 export type BooleanOperators        = 'is' | 'not';
 export type LiteralOperators        = 'eq' | 'contains' | 'startswith' | 'endswith';

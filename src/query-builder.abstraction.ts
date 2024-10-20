@@ -1,5 +1,6 @@
 import { WhereNode } from "./ast.types";
 import {
+    AGGREGATE_OPS,
     AggregateOperators,
     CollectionLeaves,
     InferCollectionOperator,
@@ -39,6 +40,18 @@ export abstract class Query<Entity, PrimitiveLeaves extends string, ArrayLeaves 
         op:     Operator,
         value:  Value,
     ): this {
+        for (let _action of AGGREGATE_OPS) {
+            if (
+                (this.whereClause.where as any)[_action] !== undefined &&
+                (this.whereClause.where as any)[_action][leaf] !== undefined
+            ) {
+                delete (this.whereClause.where as any)[_action][leaf];
+                if (Object.keys((this.whereClause.where as any)[_action]).length === 0) {
+                    delete (this.whereClause.where as any)[_action];
+                }
+            }
+        }
+
         if (!this.whereClause.where[action]) {
             (this.whereClause.where as any)[action] = {};
         }
