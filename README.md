@@ -124,7 +124,8 @@ userQuery.where('name', 'contains', 'John');
 // Get users whose house has been built after 01-01-2000
 userQuery.where('house.construction', 'gt', new Date('2000-01-01'));
 
-// Get user whose house's owner id is equal to one, inelegant equivalent to userQuery.where('id', 'eq', 1), but it works
+// Get user whose house's owner id is equal to one
+// Inelegant equivalent to userQuery.where('id', 'eq', 1), but it works
 userQuery.where('house.owner.id', 'eq', 1);
 ```
 
