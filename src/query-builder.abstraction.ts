@@ -7,14 +7,13 @@ import {
     InferCollectionValueType,
     InferOperator,
     InferValueType,
-    Leaves,
 } from "./query.types";
 
-export abstract class Query<Entity, PrimitiveLeaves extends string, ArrayLeaves extends string> {
-    whereClause: WhereNode<Entity, PrimitiveLeaves, ArrayLeaves> = { where: {} };
+export abstract class Query<Entity, Leaves extends string, ArrayLeaves extends string> {
+    whereClause: WhereNode<Entity, Leaves, ArrayLeaves> = { where: {} };
 
     where<
-        Key extends Leaves<Entity>,
+        Key extends Leaves,
         Operator extends InferOperator<Key, Entity>,
         Value extends InferValueType<Key, Entity, Operator>
     > (
@@ -22,10 +21,8 @@ export abstract class Query<Entity, PrimitiveLeaves extends string, ArrayLeaves 
         op:    Operator,
         value: Value
     ): this {
-        (this.whereClause.where as any)[leaf] = {
-            op,
-            value
-        };
+        const valueNode = { [leaf]: { op, value } };
+        this.whereClause.where = { ...this.whereClause.where, ...valueNode };
 
         return this
     }
@@ -42,23 +39,30 @@ export abstract class Query<Entity, PrimitiveLeaves extends string, ArrayLeaves 
     ): this {
         for (let _action of AGGREGATE_OPS) {
             if (
-                (this.whereClause.where as any)[_action] !== undefined &&
-                (this.whereClause.where as any)[_action][leaf] !== undefined
+                this.whereClause.where[_action] !== undefined &&
+                this.whereClause.where[_action][leaf] !== undefined
             ) {
-                delete (this.whereClause.where as any)[_action][leaf];
-                if (Object.keys((this.whereClause.where as any)[_action]).length === 0) {
-                    delete (this.whereClause.where as any)[_action];
+                delete this.whereClause.where[_action][leaf];
+                if (Object.keys(this.whereClause.where[_action]).length === 0) {
+                    delete this.whereClause.where[_action];
                 }
             }
         }
 
-        if (!this.whereClause.where[action]) {
-            (this.whereClause.where as any)[action] = {};
-        }
-
-        (this.whereClause.where as any)[action][leaf] = {
-            op,
-            value
+        const valueNode = {
+            [leaf]: {
+                op, value
+            }
+        };
+        const actionNode = {
+            [action]: {
+                ...this.whereClause.where[action],
+                ...valueNode
+            }
+        };
+        this.whereClause.where = {
+            ...this.whereClause.where,
+            ...actionNode
         };
 
         return this;
