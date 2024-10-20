@@ -263,7 +263,7 @@ test('Query should support filtering on array properties aggregates', () => {
     });
 })
 
-test('Query should support filtering on combined PrimitiveLeaves inside array properties aggregates', () => {
+test('Query should support filtering on combined leaves inside array properties aggregates', () => {
     interface User {
         id: number;
         todos: Todo[];
