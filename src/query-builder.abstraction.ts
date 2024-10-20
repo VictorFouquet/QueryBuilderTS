@@ -1,6 +1,6 @@
 import { WhereNode } from "./ast.types";
+import { AGGREGATE_OPS } from "./query.operators";
 import {
-    AGGREGATE_OPS,
     AggregateOperators,
     CollectionLeaves,
     InferCollectionOperator,
