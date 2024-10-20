@@ -341,3 +341,123 @@ test('Query should allow selection based on combined root and array properties a
         }
     });
 })
+
+test('Query should allow selection based on circular dependency', () => {
+    interface User {
+        id: number;
+        todos: Todo[]
+    }
+    interface Todo {
+        id: number;
+        title: string;
+        user: User;
+    };
+
+    class UserQuery extends Query<User, PrimitiveLeaves<User>,CollectionLeaves<User>> {};
+    let q = new UserQuery()
+        .whereCollection("all", "todos.user.id", "eq", 1);
+
+    expect(q.whereClause).toStrictEqual({
+        where: {
+            all: {
+                "todos.user.id": {
+                    op: "eq",
+                    value: 1
+                }
+            }
+        }
+    });
+})
+
+test('Query should override leaf selection if yet defined with same operator', () => {
+    interface User {
+        id: number;
+    }
+
+    class UserQuery extends Query<User, PrimitiveLeaves<User>,CollectionLeaves<User>> {};
+    let q = new UserQuery()
+        .where("id", "eq", 0)
+        .where("id", "eq", 1)
+
+    expect(q.whereClause).toStrictEqual({
+        where: {
+            id: {
+                op: "eq",
+                value: 1
+            }
+        }
+    });
+})
+
+test('Query should override leaf selection if yet defined with different operator', () => {
+    interface User {
+        id: number;
+    }
+
+    class UserQuery extends Query<User, PrimitiveLeaves<User>,CollectionLeaves<User>> {};
+    let q = new UserQuery()
+        .where("id", "eq", 0)
+        .where("id", "neq", 1)
+
+    expect(q.whereClause).toStrictEqual({
+        where: {
+            id: {
+                op: "neq",
+                value: 1
+            }
+        }
+    });
+})
+
+test('Query should override leaf selection in aggregate operation if yet defined with same operator', () => {
+    interface User {
+        id: number;
+        todos: Todo[];
+    }
+    interface Todo {
+        id: number;
+    }
+
+    class UserQuery extends Query<User, PrimitiveLeaves<User>,CollectionLeaves<User>> {};
+    let q = new UserQuery()
+        .whereCollection("all", "todos.id", "gt_lt", [0, 10])
+        .whereCollection("all", "todos.id", "gt_lt", [10, 20])
+
+    expect(q.whereClause).toStrictEqual({
+        where: {
+            all: {
+                "todos.id": {
+                    op: "gt_lt",
+                    value: [10, 20]
+                }
+            }
+        }
+    });
+})
+
+test('Query should override leaf selection in aggregate operation if yet defined with different operator', () => {
+    interface User {
+        id: number;
+        todos: Todo[];
+    }
+    interface Todo {
+        id: number;
+    }
+
+    class UserQuery extends Query<User, PrimitiveLeaves<User>,CollectionLeaves<User>> {};
+    let q = new UserQuery()
+        .whereCollection("all", "todos.id", "gt_lt", [0, 10])
+        .whereCollection("all", "todos.id", "gte_lt", [10, 20])
+
+    expect(q.whereClause).toStrictEqual({
+        where: {
+            all: {
+                "todos.id": {
+                    op: "gte_lt",
+                    value: [10, 20]
+                }
+            }
+        }
+    });
+})
+
