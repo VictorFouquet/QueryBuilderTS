@@ -1,27 +1,37 @@
-import {
-    AggregateOperators,
-    CollectionLeaves,
-    InferCollectionOperator,
-    InferCollectionValueType,
-    InferOperator,
-    InferValueType,
-    Leaves,
-} from "./query.types"
+import { Operators, InferValueType, InferCollectionValueType, Leaves, CollectionLeaves, AggregateOperators, InferOperator, InferCollectionOperator } from "./query.types";
 
-export type ValueNode<Leaf, Entity> = {
-    op: InferOperator<Leaf, Entity> | InferCollectionOperator<Leaf, Entity>,
-    value: InferValueType<Leaf, Entity, InferOperator<Leaf, Entity>> | 
-           InferCollectionValueType<Leaf, Entity, InferCollectionOperator<Leaf, Entity>>
-}
-
-export type FieldNode<Leaf extends Leaves<Entity>, Entity> = {
-    [K in Leaf]: ValueNode<K, Entity>
-}
-
-export type AggregateNode<Agg extends AggregateOperators, Entity> = {
-    [K in Agg]: FieldNode<CollectionLeaves<Entity>, Entity>
-}
-
+// Adjusted ValueNode type
+export type ValueNode<Entity, Leaf, Op extends Operators> = {
+    op: Op,
+    value: InferValueType<Leaf, Entity, Op> | InferCollectionValueType<Leaf, Entity, Op>
+};
+  
+// FieldNode handling both leaves and collection leaves
+export type FieldNode<Entity, Operator extends Operators> = {
+    [Leaf in Leaves<Entity>]: Leaf extends CollectionLeaves<Entity>
+        ? { aggregate: AggregateOperators; value: ValueNode<Entity, Leaf, Operator> }
+        : ValueNode<Entity, Leaf, Operator>;
+};
+  
+// AggregateNode definition
+export type AggregateNode<Entity> = {
+    [K in AggregateOperators]: FieldNode<Entity, Operators>
+};
+  
+// WhereNode definition with non-collection and collection handling
 export type WhereNode<Entity> = {
-    where: Partial<AggregateNode<AggregateOperators, Entity> & FieldNode<Leaves<Entity>, Entity>>
-}
+    where: {
+        [K in Exclude<Leaves<Entity>, CollectionLeaves<Entity>>]?: {
+            op: InferOperator<K, Entity>;
+            value: InferValueType<K, Entity, InferOperator<K, Entity>>;
+        };
+    } & {
+        [K in AggregateOperators]?: {
+            [P in CollectionLeaves<Entity>]?: {
+                op: InferCollectionOperator<P, Entity>;
+                value: InferCollectionValueType<P, Entity, InferCollectionOperator<P, Entity>>;
+            };
+        };
+    };
+};
+  
