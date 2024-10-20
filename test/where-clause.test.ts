@@ -409,7 +409,7 @@ test('Query should override leaf selection if yet defined with different operato
     });
 })
 
-test('Query should override leaf selection in aggregate operation if yet defined with same operator', () => {
+test('Query should override leaf selection in same aggregate operation if yet defined with same operator', () => {
     interface User {
         id: number;
         todos: Todo[];
@@ -435,7 +435,7 @@ test('Query should override leaf selection in aggregate operation if yet defined
     });
 })
 
-test('Query should override leaf selection in aggregate operation if yet defined with different operator', () => {
+test('Query should override leaf selection in same aggregate operation if yet defined with different operator', () => {
     interface User {
         id: number;
         todos: Todo[];
@@ -452,6 +452,58 @@ test('Query should override leaf selection in aggregate operation if yet defined
     expect(q.whereClause).toStrictEqual({
         where: {
             all: {
+                "todos.id": {
+                    op: "gte_lt",
+                    value: [10, 20]
+                }
+            }
+        }
+    });
+})
+
+test('Query should override leaf selection if yet defined in a different aggregate operation with same operator', () => {
+    interface User {
+        id: number;
+        todos: Todo[];
+    }
+    interface Todo {
+        id: number;
+    }
+
+    class UserQuery extends Query<User, PrimitiveLeaves<User>,CollectionLeaves<User>> {};
+    let q = new UserQuery()
+        .whereCollection("all", "todos.id", "gt_lt", [0, 10])
+        .whereCollection("some", "todos.id", "gt_lt", [10, 20])
+
+    expect(q.whereClause).toStrictEqual({
+        where: {
+            some: {
+                "todos.id": {
+                    op: "gt_lt",
+                    value: [10, 20]
+                }
+            }
+        }
+    });
+})
+
+test('Query should override leaf selection if yet defined in a different aggregate operation with different operator', () => {
+    interface User {
+        id: number;
+        todos: Todo[];
+    }
+    interface Todo {
+        id: number;
+    }
+
+    class UserQuery extends Query<User, PrimitiveLeaves<User>,CollectionLeaves<User>> {};
+    let q = new UserQuery()
+        .whereCollection("all", "todos.id", "gt_lt", [0, 10])
+        .whereCollection("some", "todos.id", "gte_lt", [10, 20])
+
+    expect(q.whereClause).toStrictEqual({
+        where: {
+            some: {
                 "todos.id": {
                     op: "gte_lt",
                     value: [10, 20]
