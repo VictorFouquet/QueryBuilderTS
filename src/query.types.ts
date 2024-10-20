@@ -84,5 +84,5 @@ export type InferCollectionValueType<Leaf, Entity, Operator> =
     Leaf extends CollectionNumericalLeaves<Entity> 
     ? Operator extends NumericalRangeOperators ? [number, number] : number
     : Leaf extends CollectionDateLeaves<Entity>
-    ? Operator extends NumericalRangeOperators ? [Date, Date] : Date[]
+    ? Operator extends NumericalRangeOperators ? [Date, Date] : Date
     : Leaf extends CollectionLiteralLeaves<Entity> ? string : boolean;
