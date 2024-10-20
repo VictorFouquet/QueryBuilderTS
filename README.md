@@ -116,6 +116,8 @@ There is three types of operators :
 
 The `value` is simply the value associated to the given `key` that will be used to perform the comparison.
 
+Client can chain `where` calls, resulting in a implicit `AND` logical relationship.
+
 Example usages :
 
 ```typescript
@@ -133,6 +135,16 @@ userQuery.where('name', 'contains', 'John');
 // Formatted result:
 // { "where": { "house.construction": { "op": "gt", "value": "2000-01-01" } } }
 userQuery.where('house.construction', 'gt', new Date('2000-01-01'));
+
+// Get users whose name starts with John and ends with Doe
+// Formatted result:
+// { "where": {
+//      "name": { "op": "contains", "value": "John" } },
+//      "house.size": { "op": "gt", "value": 5 } },
+// }
+userQuery
+    .where("name", "startswith", "John")
+    .where("house.size", "gt", 5);
 ```
 
 A compilation error will raise if the `key` can't be found in the `Entity` or its nested objects.
@@ -155,6 +167,26 @@ userQuery.where("house.size", "contains", 5);
 // a simple `number` can't be used to perform an in range comparison.
 userQuery.where("house.size", "gt_lte", 5);
 ```
+
+**Note that redefining a leaf will overide its value whatever the operator**
+
+Indeed, client are not allowed to do for instance:
+
+```typescript
+userQuery.where("house.size", "gt", 5).where("house.size", "lt", [10]);
+
+userQuery.where("name", "startswith", "John").where("name", "endswith", "Doe");
+```
+
+And should instead do:
+
+```typescript
+userQuery.where("house.size", "gt_lt", [5, 10]);
+
+userQuery.where("name", "like", "John%Doe");
+```
+
+**When using the like operator, make sure to provide a string containing at least one "%" or "_", else a compilation error will arise**
 
 ### WhereCollection
 
