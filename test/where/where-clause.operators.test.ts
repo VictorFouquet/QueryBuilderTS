@@ -100,6 +100,17 @@ test('Query should support filtering on literal values with different literal op
     .toStrictEqual({ where: { name: { op: 'endswith', value: 'abc' } }});
 })
 
+test('Query should support filtering on literal values with like operator', () => {
+    interface Queryable { name: string };
+    class Q extends Query<Queryable, PrimitiveLeaves<Queryable>, CollectionLeaves<Queryable>> {};
+
+    expect(new Q().where('name', 'like', '_abc').whereClause)
+    .toStrictEqual({ where: { name: { op: 'like', value: '_abc' } }});
+
+    expect(new Q().where('name', 'like', 'abc%').whereClause)
+    .toStrictEqual({ where: { name: { op: 'like', value: 'abc%' } }});
+})
+
 test('Query should support filtering on boolean values with different boolean operators', () => {
     interface Queryable { closed: boolean };
     class Q extends Query<Queryable, PrimitiveLeaves<Queryable>, CollectionLeaves<Queryable>> {};

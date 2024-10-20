@@ -231,7 +231,7 @@ test('Query should support filtering on combined root and array properties aggre
     });
 })
 
-test('Query should support filtering on circular dependency', () => {
+test('Query should support filtering when having circular dependency', () => {
     interface User {
         id: number;
         todos: Todo[]
@@ -244,14 +244,14 @@ test('Query should support filtering on circular dependency', () => {
 
     class UserQuery extends Query<User, PrimitiveLeaves<User>,CollectionLeaves<User>> {};
     let q = new UserQuery()
-        .whereCollection("all", "todos.user.id", "eq", 1);
+        .whereCollection("all", "todos.title", "like", "%Work%");
 
     expect(q.whereClause).toStrictEqual({
         where: {
             all: {
-                "todos.user.id": {
-                    op: "eq",
-                    value: 1
+                "todos.title": {
+                    op: "like",
+                    value: "%Work%"
                 }
             }
         }

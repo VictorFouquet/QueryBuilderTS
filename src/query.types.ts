@@ -38,10 +38,12 @@ type ArrayLeafKeys<T, MatchType, Prefix extends string = '', HasArray extends bo
 export type AggregateOperators      = 'some' | 'all' | 'none';
 export type BooleanOperators        = 'is' | 'not';
 export type LiteralOperators        = 'eq' | 'contains' | 'startswith' | 'endswith';
+export type LiteralLikeOperators    = 'like';
 export type NumericalOperators      = 'eq' | 'lte' | 'gte' | 'lt' | 'gt' | 'neq';
 export type NumericalRangeOperators = 'gt_lt' | 'gt_lte' | 'gte_lt' | 'gte_lte';
 export type Operators = AggregateOperators | BooleanOperators | LiteralOperators | NumericalOperators | NumericalRangeOperators;
 
+export type LikeValue = `${string}%${string}` | `${string}_${string}`; 
 export type NumericalLeaves<T> = LeafKeys<T, number>;
 export type CollectionNumericalLeaves<T> = ArrayLeafKeys<T, number>
 
@@ -62,14 +64,14 @@ export type InferOperator<Leaf, Entity> =
     Leaf extends NumericalLeaves<Entity> | DateLeaves<Entity>
     ? NumericalOperators | NumericalRangeOperators
     : Leaf extends LiteralLeaves<Entity>
-    ? LiteralOperators
+    ? LiteralOperators | LiteralLikeOperators
     : BooleanOperators;
 
 export type InferCollectionOperator<Leaf, Entity> =
     Leaf extends CollectionNumericalLeaves<Entity> | CollectionDateLeaves<Entity>
     ? NumericalOperators | NumericalRangeOperators
     : Leaf extends CollectionLiteralLeaves<Entity>
-    ? LiteralOperators
+    ? LiteralOperators | LiteralLikeOperators
     : BooleanOperators;
 
 export type InferValueType<Leaf, Entity, Operator> =
@@ -77,7 +79,9 @@ export type InferValueType<Leaf, Entity, Operator> =
     ? Operator extends NumericalRangeOperators ? [number, number] : number
     : Leaf extends DateLeaves<Entity>
     ? Operator extends NumericalRangeOperators ? [Date, Date] : Date
-    : Leaf extends LiteralLeaves<Entity> ? string : boolean;
+    : Leaf extends LiteralLeaves<Entity>
+    ? Operator extends LiteralLikeOperators ? LikeValue : string
+    : boolean;
 
 
 export type InferCollectionValueType<Leaf, Entity, Operator> =
@@ -85,4 +89,6 @@ export type InferCollectionValueType<Leaf, Entity, Operator> =
     ? Operator extends NumericalRangeOperators ? [number, number] : number
     : Leaf extends CollectionDateLeaves<Entity>
     ? Operator extends NumericalRangeOperators ? [Date, Date] : Date
-    : Leaf extends CollectionLiteralLeaves<Entity> ? string : boolean;
+    : Leaf extends CollectionLiteralLeaves<Entity>
+    ? Operator extends LiteralLikeOperators ? LikeValue : string
+    : boolean;
