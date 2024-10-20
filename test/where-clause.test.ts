@@ -1,6 +1,5 @@
-import { PrimitiveLeaves } from "../src/ast.types";
 import { Query } from "../src/query-builder.abstraction"
-import { CollectionLeaves } from "../src/query.types";
+import { CollectionLeaves, PrimitiveLeaves } from "../src/query.types";
 
 test('Query should support filtering on numerical values with different numerical operators', () => {
     interface Queryable { id: number };
@@ -264,7 +263,7 @@ test('Query should support filtering on array properties aggregates', () => {
     });
 })
 
-test('Query should support filtering on combined leaves inside array properties aggregates', () => {
+test('Query should support filtering on combined PrimitiveLeaves inside array properties aggregates', () => {
     interface User {
         id: number;
         todos: Todo[];

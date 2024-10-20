@@ -56,6 +56,7 @@ export type CollectionBooleanLeaves<T> = ArrayLeafKeys<T, boolean>
 
 export type Leaves<T> = NumericalLeaves<T> | LiteralLeaves<T> | DateLeaves<T> | BooleanLeaves<T>;
 export type CollectionLeaves<T> = CollectionNumericalLeaves<T> | CollectionLiteralLeaves<T> | CollectionDateLeaves<T> | CollectionBooleanLeaves<T>;
+export type PrimitiveLeaves<Entity> = Exclude<Leaves<Entity>, CollectionLeaves<Entity>> & string;
 
 export type InferOperator<Leaf, Entity> =
     Leaf extends NumericalLeaves<Entity> | DateLeaves<Entity>
