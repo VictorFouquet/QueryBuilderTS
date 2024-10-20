@@ -56,9 +56,11 @@ This type will extract all the primitive leaves recursively, meaning that from t
 
 The nested leaves will be prepended with their associated key in the parent object, dot separated.
 
-The result would be the following string union : `'id' | 'name' | house.id | house.size | house.construction | house.owner.id | house.owner.name`
+The result would be the following string union : `'id' | 'name' | house.id | house.size | house.construction`
 
-Note that in the recursion process, even if we can get back to `owner` field through the `house` branch, the exploration stops when a yet visited type is encountered, thus we can't find `house.owner.house.id` in the union for instance.
+Note that in the recursion process, the exploration stops when a yet visited type is encountered, thus we can't find `house.owner.[...]` as `User` has been visited as root entity.
+
+If we take the example of a `CarQuery`, we won't find leaves looking like `owner.house.owner.[...]` but we will find leaves like `owner.house.size`
 
 #### Collection leaves
 
@@ -68,9 +70,11 @@ The main difference is that ``CollectionLeaves`` have an array in the path that 
 
 From the ``Entity`` example, the generated string union would be:
 
-`cars.id | cars.model | cars.mileage | cars.owner.id | cars.owner.name | cars.owner.house.id | cars.owner.house.size | cars.owner.house.construction | house.owner.cars.id | house.owner.cars.model | house.owner.cars.mileage`
+`cars.id | cars.model | cars.mileage`
 
-As we have seen in the ``PrimitiveLeaves`` example, we can get back to `cars` when exploring the `house` branch going through the owner, but the recursion will not get deeper, so the list of leaves is always a finite union.
+As we have seen in the ``PrimitiveLeaves`` example, we can't reach back `User` in a `UserQuery` through a leaf that would look like `cars.owner.[...]`.
+
+Similarly for a `CarQuery`, we won't find leaves looking like `owner.cars.[...]` but we will find leaves like `owner.house.size`
 
 #### Creating the query class
 
@@ -90,7 +94,7 @@ _Coming soon_
 
 `Query` objects can be use to perform filtering operations.
 
-`where` and `whereCollections` are currently supported.
+`where`, `whereCollections` and `orWhere` are currently supported.
 
 ### Where
 
@@ -107,7 +111,7 @@ There is three types of operators :
 
 - `Numerical` being `'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte'` and can be applied to `number` and `Date` values
 - `NumericalRangeOperators` being `'gt_lt' | 'gt_lte' | 'gte_lt' | 'gte_lte'` and can be applied to `number` and `Date` values
-- `LitteralOperators` being `'eq' | 'neq' | 'contains' | 'startsWith' | 'endsWith'` and can be applied to `string` values
+- `LitteralOperators` being `'eq' | 'neq' | 'contains' | 'startswith' | 'endswith'` and can be applied to `string` values
 - `BooleanOperators` being `is | not` and can be applied to `boolean` values
 
 The `value` is simply the value associated to the given `key` that will be used to perform the comparison.
@@ -116,17 +120,19 @@ Example usages :
 
 ```typescript
 // Get user whose id equals one
+// Formatted result:
+// { "where": { "id": { "op": "eq", "value": 1 } } }
 userQuery.where('id', 'eq', 1);
 
 // Get users whose name contains John
+// Formatted result:
+// { "where": { "name": { "op": "contains", "value": "John" } } }
 userQuery.where('name', 'contains', 'John');
 
 // Get users whose house has been built after 01-01-2000
+// Formatted result:
+// { "where": { "house.construction": { "op": "gt", "value": "2000-01-01" } } }
 userQuery.where('house.construction', 'gt', new Date('2000-01-01'));
-
-// Get user whose house's owner id is equal to one
-// Inelegant equivalent to userQuery.where('id', 'eq', 1), but it works
-userQuery.where('house.owner.id', 'eq', 1);
 ```
 
 A compilation error will raise if the `key` can't be found in the `Entity` or its nested objects.
@@ -162,17 +168,62 @@ Examples:
 
 ```typescript
 // Query to get all users having any of their cars with a mileage under 50k
+// Formatted result:
+// { "where": { "some" : { "cars.mileage": { "op": "lt", "value": 50000 } } } }
 userQuery
     .whereCollection("some", "cars.mileage", "lt", 50000);
 
+
 // Query to get all users having none of their cars with a mileage under 50k
+// Formatted result:
+// { "where": { "none" : { "cars.mileage": { "op": "lt", "value": 50000 } } } }
 userQuery
     .whereCollection("none", "cars.mileage", "lt", 50000);
 
 // Query to get all users having all of their cars with a mileage under 50k
+// Formatted result:
+// { "where": { "all" : { "cars.mileage": { "op": "lt", "value": 50000 } } } }
 userQuery
     .whereCollection("all", "cars.mileage", "lt", 50000);
 ```
+
+### OrWhere
+
+The `orWhere` method function needs a single argument, a `Query` having the same type as the main query's type.
+
+This method adds a `OR` field at the root of the main query's root `where` node.
+
+This field's value is a tupple containing two `WhereNode` objects.
+
+The first element in the tupple is the main query, the second element is the query given as argument.
+
+Nested and chained OR clauses are supported.
+
+Example:
+
+```typescript
+// Get all user whose name starts with John or ends with Doe
+userQuery
+    .where("name", "startswith", "John")
+    .orWhere(new UserQuery().where("name", "endswith", "Doe"));
+```
+
+This will produce the following AST :
+
+```json
+{
+    "where": {
+        "OR": [
+            { "where": { "name": { "op": "startswith", "value": "John" } } },
+            { "where": { "name": { "op": "endswith", "value": "Doe" } } },
+        ]
+    }
+}
+```
+
+**All key-value pairs that where contained at the root where node will be erased are they are now nested inside the OR clause**
+
+**Calling the orWhere method before calling a where or whereCollection will throw a runtime error**
 
 ## OrderBy clause
 
