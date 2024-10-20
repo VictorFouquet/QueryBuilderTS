@@ -1,4 +1,4 @@
-import { WhereNode, FieldNode } from "./ast.types";
+import { WhereNode } from "./ast.types";
 import {
     AggregateOperators,
     CollectionLeaves,
@@ -9,8 +9,8 @@ import {
     Leaves,
 } from "./query.types";
 
-export abstract class Query<Entity> {
-    whereClause: WhereNode<Entity> = { where: {} };
+export abstract class Query<Entity, PrimitiveLeaves extends string, ArrayLeaves extends string> {
+    whereClause: WhereNode<Entity, PrimitiveLeaves, ArrayLeaves> = { where: {} };
 
     where<
         Key extends Leaves<Entity>,
