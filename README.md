@@ -141,10 +141,11 @@ For instance :
 // This won't compile as `house.wrongfield` is not a valid leaf in the `User` entity.
 userQuery.where("house.wrongfield", "contains", "example");
 
-// This won't compile as `house.size` is not a string, thus a `contains` operator would not make sens.
+// This won't compile as `house.size` is not a string,
+// thus a `contains` operator would not make sens.
 userQuery.where("house.size", "contains", 5);
 
-// This won't compile because even if `house.size` and `gt_lte` as they are a `number` associated field and a `NumericalRangeOperator`
+// This won't compile because even if `house.size` and `gt_lte` are compatible,
 // a simple `number` can't be used to perform an in range comparison.
 userQuery.where("house.size", "gt_lte", 5);
 ```
