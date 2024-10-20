@@ -513,3 +513,31 @@ test('Query should override leaf selection if yet defined in a different aggrega
     });
 })
 
+test('Query generated whereClause should be traversable', () => {
+    interface User {
+        id: number;
+        name: string;
+        todos: Todo[];
+    }
+    interface Todo {
+        id: number;
+        title: string;
+        due: Date;
+        user: User;
+    };
+
+    class UserQuery extends Query<User, PrimitiveLeaves<User>,CollectionLeaves<User>> {};
+    let q = new UserQuery()
+        .where("name", "startswith", "John")
+        .whereCollection("all", "todos.due", "gt", new Date('01-01-2024'));
+
+    expect(q.whereClause.where.name?.op === "startswith");
+    expect(q.whereClause.where.name?.value === "John");
+    expect(q.whereClause.where.all?.["todos.due"]?.op === "eq");
+    expect(q.whereClause.where.all?.["todos.due"]?.value === new Date('01-01-2024'));
+
+    expect(q.whereClause.where.id?.op === undefined);
+    expect(q.whereClause.where.id?.value === undefined);
+    expect(q.whereClause.where.all?.["todos.id"]?.op === undefined);
+    expect(q.whereClause.where.all?.["todos.id"]?.value === undefined);
+})
