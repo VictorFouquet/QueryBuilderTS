@@ -94,7 +94,7 @@ _Coming soon_
 
 `Query` objects can be use to perform filtering operations.
 
-`where`, `whereCollections` and `orWhere` are currently supported.
+`where`, `whereCollection` and `orWhere` are currently supported.
 
 ### Where
 
@@ -109,7 +109,7 @@ The `operator` argument is the comparison criteria.
 
 There is five types of operators :
 
-- `Numerical` being `'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte'` and can be applied to `number` and `Date` values
+- `NumericalOperators` being `'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte'` and can be applied to `number` and `Date` values
 - `NumericalRangeOperators` being `'gt_lt' | 'gt_lte' | 'gte_lt' | 'gte_lte'` and can be applied to `number` and `Date` values
 - `LitteralOperators` being `'eq' | 'neq' | 'contains' | 'startswith' | 'endswith'` and can be applied to `string` values
 - `LitteralLikeOperators` being `like` and can be applied to `string` values
@@ -139,13 +139,16 @@ userQuery.where('name', 'like', 'John%Doe');
 
 // Get users whose house has been built after 01-01-2000 and before 01-01-2020
 // Formatted result:
-// { "where": { "house.construction": { "op": "gt", "value": "2000-01-01" } } }
+// { "where": { "house.construction": {
+//      "op": "gt_lt",
+//      "value": ["2000-01-01", "2020-01-01"] 
+// } } }
 userQuery.where('house.construction', 'gt_lt', new Date('2000-01-01'), new Date('2020-01-01'));
 
 // Get users whose name starts with John and ends with Doe
 // Formatted result:
 // { "where": {
-//      "name": { "op": "contains", "value": "John" } },
+//      "name": { "op": "startswith", "value": "John" } },
 //      "house.size": { "op": "gt", "value": 5 } },
 // }
 userQuery
@@ -184,7 +187,7 @@ Examples:
 
 ```typescript
 // House size greater than 5 is overidden by the second call
-userQuery.where("house.size", "gt", 5).where("house.size", "lt", [10]);
+userQuery.where("house.size", "gt", 5).where("house.size", "lt", 10);
 
 // Use range operator instead to get users whose house is greater than 5 and lower than 10
 userQuery.where("house.size", "gt_lt", [5, 10]);
