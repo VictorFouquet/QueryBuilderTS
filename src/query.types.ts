@@ -1,5 +1,5 @@
 // Recursive type to extract keys where the value is a primitive or object
-type LeafKeys<T, MatchType, Prefix extends string = '', VisitedKeys = {}, VisitedValues = never> = {
+type LeafKeys<T, MatchType, Prefix extends string = '', VisitedKeys = {}, VisitedValues = T> = {
     [K in keyof T]: T[K] extends MatchType
         ? `${Prefix}${K & string}` // If value matches, include key
         : T[K] extends object
@@ -13,7 +13,7 @@ type LeafKeys<T, MatchType, Prefix extends string = '', VisitedKeys = {}, Visite
 
   
 // Recursive type to extract keys where the value is a primitive or object and contained in a collection
-type ArrayLeafKeys<T, MatchType, Prefix extends string = '', HasArray extends boolean = false, VisitedKeys = {}, VisitedValues = never> = {
+type ArrayLeafKeys<T, MatchType, Prefix extends string = '', HasArray extends boolean = false, VisitedKeys = {}, VisitedValues = T> = {
     [K in keyof T]: T[K] extends (infer U)[] // If the current property is an array
         ? K extends keyof VisitedKeys // Check if we have visited this key already
             ? never // Skip already visited keys
