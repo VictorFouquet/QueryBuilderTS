@@ -1,35 +1,35 @@
+// Utils types to concatenate strings and update objects
+type ParentChildKey<P, C> = `${P & string}.${C & string}`;
+type Path<Prefix extends string, Key, Sep extends string = ''> = `${Prefix}${Key & string}${Sep}`;
+type Visited<T, K> = { [key in ParentChildKey<T, K>]: true } & { [key in ParentChildKey<K, T>]: true } 
+type Updated<V, T, K> = V & Visited<T, K>;
+
 // Recursive type to extract keys where the value is a primitive or object
-type LeafKeys<T, MatchType, Prefix extends string = '', VisitedKeys = {}, VisitedValues = T> = {
+type LeafKeys<T, MatchType, Prefix extends string = '', VisitedKeys = {}> = {
     [K in keyof T]: T[K] extends MatchType
-        ? `${Prefix}${K & string}` // If value matches, include key
+        ? Path<Prefix, K> // If value matches, include key
         : T[K] extends object
-        ? K extends keyof VisitedKeys // Check if we have visited this key
-            ? never // Skip already visited keys
-            : [T[K]] extends [VisitedValues] // Check if the type has already been visited
+        ? ParentChildKey<T, K> extends keyof VisitedKeys // Check if we have visited this key
             ? never // Skip already visited types
-            : LeafKeys<T[K], MatchType, `${Prefix}${K & string}.`, VisitedKeys & { [key in K]: true }, VisitedValues | T[K]> // Recurse with tracking
+            : LeafKeys<T[K], MatchType, Path<Prefix, K, '.'>, Updated<VisitedKeys, T, K>> // Recurse with tracking
         : never; // Skip non-matching types
 }[keyof T];
 
   
 // Recursive type to extract keys where the value is a primitive or object and contained in a collection
-type ArrayLeafKeys<T, MatchType, Prefix extends string = '', HasArray extends boolean = false, VisitedKeys = {}, VisitedValues = T> = {
-    [K in keyof T]: T[K] extends (infer U)[] // If the current property is an array
+type ArrayLeafKeys<T, MatchType, Prefix extends string = '', HasArray extends boolean = false, VisitedKeys = {}> = {
+    [K in keyof T]: T[K] extends Array<infer U> // If the current property is an array
         ? K extends keyof VisitedKeys // Check if we have visited this key already
             ? never // Skip already visited keys
-            : [U] extends [VisitedValues] // Check if the array's element type has already been visited
-            ? never // Avoid recursion if the type has been visited
-            : ArrayLeafKeys<U, MatchType, `${Prefix}${K & string}.`, true, VisitedKeys & { [key in K]: true }, VisitedValues | U> // Recurse into the array's element type
+            : ArrayLeafKeys<U, MatchType, Path<Prefix, K, '.'>, true, Updated<VisitedKeys, T, K>> // Recurse into the array's element type
         : T[K] extends MatchType
         ? HasArray extends true
-            ? `${Prefix}${K & string}` // Store key if within an array
+            ? Path<Prefix, K> // Store key if within an array
             : never // Skip primitives that are not inside arrays
         : T[K] extends object
-        ? K extends keyof VisitedKeys // Check if we have visited this key already
+        ? ParentChildKey<T, K> extends keyof VisitedKeys // Check if we have visited this key already
             ? never // Skip already visited keys
-            : [T[K]] extends [VisitedValues] // Check if we've already visited this type
-            ? never // Avoid infinite recursion for circular types
-            : ArrayLeafKeys<T[K], MatchType, `${Prefix}${K & string}.`, HasArray, VisitedKeys & { [key in K]: true }, VisitedValues | T[K]> // Recurse into the nested object
+            : ArrayLeafKeys<T[K], MatchType, Path<Prefix, K, '.'>, HasArray, Updated<VisitedKeys, T, K>> // Recurse into the nested object
         : never; // Skip non-matching types
 }[keyof T];
 
